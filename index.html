@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestDriller – Activation Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f1a;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo h1 { color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+    .logo p  { color: #7a7a9a; font-size: 13px; margin-top: 4px; }
+
+    label {
+      display: block;
+      color: #a0a0c0;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* ── Exam Type Toggle ── */
+    .exam-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .exam-toggle input[type="radio"] { display: none; }
+
+    .exam-toggle label {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 10px;
+      background: #0f0f1a;
+      border: 2px solid #2a2a4a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #7a7a9a;
+    }
+
+    .exam-toggle label .icon { font-size: 22px; }
+    .exam-toggle label .badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #5b5bd6;
+      background: rgba(91,91,214,0.12);
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+
+    .exam-toggle input[type="radio"]:checked + label {
+      border-color: #5b5bd6;
+      background: rgba(91,91,214,0.08);
+      color: #ffffff;
+    }
+
+    /* ── Text Input ── */
+    .field { margin-bottom: 4px; }
+
+    input[type="text"] {
+      width: 100%;
+      background: #0f0f1a;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 15px;
+      padding: 12px 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: #3a3a5a; letter-spacing: 1px; text-transform: none; }
+    input[type="text"]:focus { border-color: #5b5bd6; }
+
+    button.primary {
+      width: 100%;
+      margin-top: 20px;
+      padding: 13px;
+      background: #5b5bd6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    button.primary:hover:not(:disabled) { background: #4a4ac5; }
+    button.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Result ── */
+    .result {
+      display: none;
+      margin-top: 24px;
+      background: #0f0f1a;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      padding: 18px 16px;
+    }
+
+    .result.visible { display: block; }
+
+    .result .r-label {
+      color: #7a7a9a;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .result .r-exam {
+      color: #5b5bd6;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .result .r-key {
+      color: #5b5bd6;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      margin-top: 12px;
+      background: transparent;
+      border: 1px solid #2a2a4a;
+      color: #a0a0c0;
+      font-size: 12px;
+      padding: 7px 14px;
+      width: auto;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .copy-btn:hover { background: #2a2a4a; color: #fff; }
+
+    /* ── Error ── */
+    .error {
+      display: none;
+      margin-top: 16px;
+      background: #2a1020;
+      border: 1px solid #5a2030;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #ff7090;
+      font-size: 13px;
+    }
+
+    .error.visible { display: block; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .divider { border: none; border-top: 1px solid #2a2a4a; margin: 28px 0 20px; }
+    .footer  { text-align: center; color: #3a3a5a; font-size: 11px; }
+
+    /* ── Auth screens ── */
+    .hidden { display: none !important; }
+
+    .tab-switch {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: #0f0f1a;
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .tab-switch button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #7a7a9a;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab-switch button.active { background: #5b5bd6; color: #fff; }
+
+    input[type="email"], input[type="password"], input[type="number"] {
+      width: 100%;
+      background: #0f0f1a;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 15px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 14px;
+    }
+    input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus {
+      border-color: #5b5bd6;
+    }
+    input::placeholder { color: #3a3a5a; }
+
+    /* ── Dashboard ── */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .topbar .email { color: #a0a0c0; font-size: 13px; }
+    .topbar .logout {
+      background: transparent;
+      border: 1px solid #2a2a4a;
+      color: #7a7a9a;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .topbar .logout:hover { background: #2a2a4a; color: #fff; }
+
+    .coin-card {
+      background: linear-gradient(135deg, #5b5bd6, #3a3aa0);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .coin-card .coin-count { color: #fff; font-size: 32px; font-weight: 800; }
+    .coin-card .coin-label { color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+    .coin-card .coin-sub   { color: rgba(255,255,255,0.65); font-size: 12px; margin-top: 6px; }
+
+    .price-preview {
+      background: #0f0f1a;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .price-preview .ptotal { color: #5b5bd6; font-size: 18px; font-weight: 700; }
+    .price-preview .plabel { color: #7a7a9a; font-size: 12px; }
+    .discount-badge {
+      display: inline-block;
+      background: rgba(91,91,214,0.15);
+      color: #8d8df0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    button.secondary {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      background: transparent;
+      color: #a0a0c0;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.secondary:hover { background: #2a2a4a; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <div class="logo">
+      <h1>🔑 TestDriller</h1>
+      <p id="taglineText">Sign in to manage your activation keys</p>
+    </div>
+
+    <!-- ══════════════ AUTH SCREEN ══════════════ -->
+    <div id="authScreen">
+      <div class="tab-switch">
+        <button id="tabLogin" class="active" onclick="switchTab('login')">Log In</button>
+        <button id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="username" />
+      <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password" />
+
+      <button class="primary" id="authBtn" onclick="submitAuth()">Log In</button>
+
+      <div class="error" id="authErrBox"></div>
+    </div>
+
+    <!-- ══════════════ DASHBOARD (after login) ══════════════ -->
+    <div id="dashboardScreen" class="hidden">
+      <div class="topbar">
+        <span class="email" id="acctEmail">—</span>
+        <button class="logout" onclick="logout()">Log Out</button>
+      </div>
+
+      <div class="coin-card">
+        <div class="coin-count" id="coinCount">0</div>
+        <div class="coin-label">Coins</div>
+        <div class="coin-sub" id="coinSub">10 coins = 1 activation key</div>
+      </div>
+
+      <div id="discountBadgeWrap"></div>
+
+      <!-- Buy coins -->
+      <label>Number of Activation Keys to Buy</label>
+      <input type="number" id="qtyInput" min="1" max="1000" value="1" oninput="updatePricePreview()" />
+
+      <div class="price-preview">
+        <span class="plabel">Total Price</span>
+        <span class="ptotal" id="priceTotal">₦0</span>
+      </div>
+
+      <button class="primary" id="buyBtn" onclick="startPurchase()">Pay with Paystack</button>
+
+      <hr class="divider" />
+
+      <!-- Spend coins on a key -->
+      <label>Exam Type</label>
+      <div class="exam-toggle">
+        <input type="radio" name="examType" id="examUTME" value="UTME" checked />
+        <label for="examUTME">
+          <span class="icon">🎓</span>
+          UTME
+          <span class="badge">JAMB</span>
+        </label>
+
+        <input type="radio" name="examType" id="examSSCE" value="SSCE" />
+        <label for="examSSCE">
+          <span class="icon">📚</span>
+          SSCE
+          <span class="badge">WAEC / NECO</span>
+        </label>
+      </div>
+
+      <button class="secondary" id="genBtn" onclick="generateKey()">Generate Activation Key (10 coins)</button>
+
+      <div class="error" id="dashErrBox"></div>
+
+      <div class="result" id="resultBox">
+        <div class="r-label">Activation Key</div>
+        <div class="r-exam" id="actExam">—</div>
+        <div class="r-key" id="actKey">—</div>
+        <button class="copy-btn" onclick="copyKey()">📋 Copy</button>
+      </div>
+    </div>
+
+    <hr class="divider" />
+    <div class="footer">Purchased but having issues? Contact support.</div>
+
+  </div>
+
+  <script src="https://js.paystack.co/v2/inline.js"></script>
+
+  <script>
+    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4pxgzI8ehZBrtyHDjo260f2_WIobFLTWrIfLae7QQ1MzeEvFUYrZ6pEk0mlwkkZu/exec";
+    var PAYSTACK_PUBLIC_KEY = "REPLACE_WITH_YOUR_PAYSTACK_PUBLIC_KEY"; // pk_live_... or pk_test_...
+
+    var state = {
+      sessionToken: localStorage.getItem("td_session") || null,
+      email: null,
+      coinBalance: 0,
+      discountEligible: false
+    };
+
+    var authMode = "login";
+
+    // ── API helper ──────────────────────────────────────────────────────────
+    function callApi(action, params) {
+      params = params || {};
+      params.action = action;
+      return fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight on Apps Script
+        body: JSON.stringify(params)
+      }).then(function(r) { return r.json(); });
+    }
+
+    // ── Tab switching (Login / Sign Up) ─────────────────────────────────────
+    function switchTab(mode) {
+      authMode = mode;
+      document.getElementById("tabLogin").classList.toggle("active", mode === "login");
+      document.getElementById("tabSignup").classList.toggle("active", mode === "signup");
+      document.getElementById("authBtn").textContent = mode === "login" ? "Log In" : "Sign Up";
+      document.getElementById("authErrBox").className = "error";
+    }
+
+    function submitAuth() {
+      var email = document.getElementById("authEmail").value.trim();
+      var password = document.getElementById("authPassword").value;
+      var btn = document.getElementById("authBtn");
+      var err = document.getElementById("authErrBox");
+      err.className = "error";
+
+      if (!email || !password) {
+        showAuthError("Please enter both email and password.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Please wait…';
+
+      callApi(authMode, { email: email, password: password })
+        .then(function(res) {
+          btn.disabled = false;
+          btn.textContent = authMode === "login" ? "Log In" : "Sign Up";
+          if (!res.ok) { showAuthError(res.msg); return; }
+
+          state.sessionToken = res.sessionToken;
+          state.email = res.email;
+          state.coinBalance = res.coinBalance;
+          state.discountEligible = res.discountEligible;
+          localStorage.setItem("td_session", res.sessionToken);
+          enterDashboard();
+        })
+        .catch(function() {
+          btn.disabled = false;
+          btn.textContent = authMode === "login" ? "Log In" : "Sign Up";
+          showAuthError("Something went wrong. Please try again.");
+        });
+    }
+
+    function showAuthError(msg) {
+      var el = document.getElementById("authErrBox");
+      el.textContent = msg;
+      el.className = "error visible";
+    }
+
+    function logout() {
+      localStorage.removeItem("td_session");
+      state = { sessionToken: null, email: null, coinBalance: 0, discountEligible: false };
+      document.getElementById("dashboardScreen").className = "hidden";
+      document.getElementById("authScreen").className = "";
+      document.getElementById("taglineText").textContent = "Sign in to manage your activation keys";
+      document.getElementById("authEmail").value = "";
+      document.getElementById("authPassword").value = "";
+    }
+
+    // ── Dashboard ────────────────────────────────────────────────────────────
+    function enterDashboard() {
+      document.getElementById("authScreen").className = "hidden";
+      document.getElementById("dashboardScreen").className = "";
+      document.getElementById("taglineText").textContent = "Manage your coins and activation keys";
+      document.getElementById("acctEmail").textContent = state.email;
+      renderDiscountBadge();
+      updatePricePreview();
+      refreshCoinDisplay();
+    }
+
+    function refreshCoinDisplay() {
+      document.getElementById("coinCount").textContent = state.coinBalance;
+      var possibleKeys = Math.floor(state.coinBalance / 10);
+      document.getElementById("coinSub").textContent =
+        "10 coins = 1 activation key  •  " + possibleKeys + " key(s) available now";
+    }
+
+    function renderDiscountBadge() {
+      var wrap = document.getElementById("discountBadgeWrap");
+      wrap.innerHTML = state.discountEligible
+        ? '<div class="discount-badge">🎉 Early adopter pricing — ₦3,900 per key</div>'
+        : '';
+    }
+
+    function pricePerKeyNaira() {
+      return state.discountEligible ? 3900 : 4000;
+    }
+
+    function updatePricePreview() {
+      var qty = parseInt(document.getElementById("qtyInput").value, 10) || 0;
+      var total = qty * pricePerKeyNaira();
+      document.getElementById("priceTotal").textContent = "₦" + total.toLocaleString();
+    }
+
+    // ── Purchase flow: initPurchase (server) -> Paystack popup -> verifyPurchase ──
+    function startPurchase() {
+      var qty = parseInt(document.getElementById("qtyInput").value, 10);
+      var btn = document.getElementById("buyBtn");
+      var err = document.getElementById("dashErrBox");
+      err.className = "error";
+
+      if (!qty || qty < 1) {
+        showDashError("Please enter a valid quantity.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Preparing checkout…';
+
+      callApi("initPurchase", { sessionToken: state.sessionToken, quantity: qty })
+        .then(function(res) {
+          btn.disabled = false;
+          btn.textContent = "Pay with Paystack";
+          if (!res.ok) { showDashError(res.msg); return; }
+          openPaystackPopup(res);
+        })
+        .catch(function() {
+          btn.disabled = false;
+          btn.textContent = "Pay with Paystack";
+          showDashError("Could not start checkout. Please try again.");
+        });
+    }
+
+    function openPaystackPopup(purchase) {
+      var popup = new PaystackPop();
+      popup.newTransaction({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: purchase.email,
+        amount: purchase.amountKobo,
+        ref: purchase.reference,
+        currency: "NGN",
+        onSuccess: function() {
+          var btn = document.getElementById("buyBtn");
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner"></span>Confirming payment…';
+
+          callApi("verifyPurchase", { sessionToken: state.sessionToken, reference: purchase.reference })
+            .then(function(res) {
+              btn.disabled = false;
+              btn.textContent = "Pay with Paystack";
+              if (!res.ok) { showDashError(res.msg); return; }
+              state.coinBalance = res.coinBalance;
+              refreshCoinDisplay();
+              showDashSuccess(res.coinsAdded + " coins added! New balance: " + res.coinBalance);
+            })
+            .catch(function() {
+              btn.disabled = false;
+              btn.textContent = "Pay with Paystack";
+              showDashError("Payment made, but confirmation failed. Contact support with your reference: " + purchase.reference);
+            });
+        },
+        onCancel: function() {
+          showDashError("Payment was cancelled.");
+        }
+      });
+    }
+
+    // ── Generate key from coin balance ──────────────────────────────────────
+    function getExamType() {
+      var radios = document.querySelectorAll('input[name="examType"]');
+      for (var i = 0; i < radios.length; i++) {
+        if (radios[i].checked) return radios[i].value;
+      }
+      return "UTME";
+    }
+
+    function generateKey() {
+      var btn = document.getElementById("genBtn");
+      var err = document.getElementById("dashErrBox");
+      var res = document.getElementById("resultBox");
+      err.className = "error";
+      res.className = "result";
+
+      if (state.coinBalance < 10) {
+        showDashError("You need at least 10 coins to generate a key. Please buy more above.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Generating…';
+
+      callApi("generateFromCoins", { sessionToken: state.sessionToken, examType: getExamType() })
+        .then(function(response) {
+          btn.disabled = false;
+          btn.textContent = "Generate Activation Key (10 coins)";
+          if (response.ok) {
+            state.coinBalance = response.coinBalance;
+            refreshCoinDisplay();
+            document.getElementById("actKey").textContent = response.activationKey;
+            document.getElementById("actExam").textContent =
+              response.examType + " — " + (response.examType === "UTME" ? "JAMB" : "WAEC / NECO");
+            res.className = "result visible";
+          } else {
+            showDashError(response.msg);
+          }
+        })
+        .catch(function() {
+          btn.disabled = false;
+          btn.textContent = "Generate Activation Key (10 coins)";
+          showDashError("Something went wrong. Please try again.");
+        });
+    }
+
+    function showDashError(msg) {
+      var el = document.getElementById("dashErrBox");
+      el.textContent = msg;
+      el.className = "error visible";
+    }
+
+    function showDashSuccess(msg) {
+      var el = document.getElementById("dashErrBox");
+      el.style.background = "#102a18";
+      el.style.borderColor = "#205a30";
+      el.style.color = "#7dff9e";
+      el.textContent = msg;
+      el.className = "error visible";
+    }
+
+    function copyKey() {
+      var key = document.getElementById("actKey").textContent;
+      navigator.clipboard.writeText(key).then(function() {
+        var btn = document.querySelector(".copy-btn");
+        btn.textContent = "✅ Copied!";
+        setTimeout(function() { btn.textContent = "📋 Copy"; }, 2000);
+      });
+    }
+
+    document.getElementById("authPassword").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") submitAuth();
+    });
+
+    // ── On load: try to resume an existing session ──────────────────────────
+    (function init() {
+      if (!state.sessionToken) return;
+      callApi("getAccount", { sessionToken: state.sessionToken }).then(function(res) {
+        if (res.ok) {
+          state.email = res.email;
+          state.coinBalance = res.coinBalance;
+          state.discountEligible = res.discountEligible;
+          enterDashboard();
+        } else {
+          localStorage.removeItem("td_session");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
